@@ -1,10 +1,71 @@
 ---
 title: "Seurat_TD"
-author: Yvonne Chen
+author: Sida Chen
 output: github_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(Seurat)
+library(patchwork)
 ```
+
+# IFE001
+```{r}
+# Load datasets
+IFE001.data <- Read10X(data_dir <- '~/Documents/cellranger/IFE001/outs/filtered_feature_bc_matrix')
+# Initialize Seurat Object
+IFE001 <- CreateSeuratObject(counts = IFE001.data, project = 'IFE', min.cells = 3, min.features = 200)
+```
+
+## Normalizing data --- Log normalization, scale = 10000
+```{r}
+IFE001 <- NormalizeData(IFE001)
+```
+
+## Scaling the data
+```{r}
+all.genes_IFE001 <- rownames(IFE001)
+IFE001 <- ScaleData(IFE001, features = all.genes_IFE001)
+```
+
+## Linear Dimentional Reduction
+```{r}
+IFE001 <- FindVariableFeatures(IFE001, selection.method = "vst", nfeatures = 2000)
+
+IFE001 <- RunPCA(IFE001, features = VariableFeatures(object = IFE001))
+print(IFE001[["pca"]], dims = 1:5, nfeature = 5)
+VizDimLoadings(IFE001, dims = 1:2, reduction = "pca")
+DimPlot(IFE001, reduction = "pca") + NoLegend()
+```
+
+## Cluster
+```{r}
+IFE001 <- FindNeighbors(IFE001, dims = 1:10)
+IFE001 <- FindClusters(IFE001, resolution = 0.5)
+head(Idents(IFE001), 5)
+```
+
+## Non-linear dimensional reduction (UMAP/tSNE)
+```{r}
+IFE001 <- RunUMAP(IFE001, dims = 1:10)
+DimPlot(IFE001, reduction = "umap")
+saveRDS(IFE001, file = "./IFE001_umap.rds")
+```
+
+## Cluster biomarkers & DEGs
+
+
+
+
+
+
+
+
+
+
+
+
+
 
