@@ -147,6 +147,54 @@ saveRDS(IFE003, file = "./IFE003_umap.rds")
 ```
 
 
+# TD001
+```{r}
+# Load datasets
+TD001.data <- Read10X(data_dir <- '~/Documents/cellranger/TD001/outs/filtered_feature_bc_matrix')
+# Initialize Seurat Object
+TD001 <- CreateSeuratObject(counts = TD001.data, project = 'TD', min.cells = 3, min.features = 200)
+```
+
+## Normalizing data --- Log normalization, scale = 10000
+```{r}
+TD001 <- NormalizeData(TD001)
+```
+
+## Scaling the data
+```{r}
+all.genes_TD001 <- rownames(TD001)
+TD001 <- ScaleData(TD001, features = all.genes_TD001)
+```
+
+## Linear Dimentional Reduction
+```{r}
+TD001 <- FindVariableFeatures(TD001, selection.method = "vst", nfeatures = 2000)
+
+TD001 <- RunPCA(TD001, features = VariableFeatures(object = TD001))
+print(TD001[["pca"]], dims = 1:5, nfeature = 5)
+VizDimLoadings(TD001, dims = 1:2, reduction = "pca")
+DimPlot(TD001, reduction = "pca") + NoLegend()
+```
+
+## Cluster
+```{r}
+TD001 <- FindNeighbors(TD001, dims = 1:10)
+TD001 <- FindClusters(TD001, resolution = 0.5)
+head(Idents(TD001), 5)
+```
+
+## Non-linear dimensional reduction (UMAP/tSNE)
+```{r}
+TD001 <- RunUMAP(TD001, dims = 1:10)
+DimPlot(TD001, reduction = "umap")
+saveRDS(TD001, file = "./TD001_umap.rds")
+```
+
+
+
+
+
+
 
 
 
