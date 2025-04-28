@@ -103,6 +103,48 @@ saveRDS(IFE002, file = "./IFE002_umap.rds")
 ```
 
 
+# IFE003
+```{r}
+# Load datasets
+IFE003.data <- Read10X(data_dir <- '~/Documents/cellranger/IFE003/outs/filtered_feature_bc_matrix')
+# Initialize Seurat Object
+IFE003 <- CreateSeuratObject(counts = IFE003.data, project = 'IFE', min.cells = 3, min.features = 200)
+```
+
+## Normalizing data --- Log normalization, scale = 10000
+```{r}
+IFE003 <- NormalizeData(IFE003)
+```
+
+## Scaling the data
+```{r}
+all.genes_IFE003 <- rownames(IFE003)
+IFE003 <- ScaleData(IFE003, features = all.genes_IFE003)
+```
+
+## Linear Dimentional Reduction
+```{r}
+IFE003 <- FindVariableFeatures(IFE003, selection.method = "vst", nfeatures = 2000)
+
+IFE003 <- RunPCA(IFE003, features = VariableFeatures(object = IFE003))
+print(IFE003[["pca"]], dims = 1:5, nfeature = 5)
+VizDimLoadings(IFE003, dims = 1:2, reduction = "pca")
+DimPlot(IFE003, reduction = "pca") + NoLegend()
+```
+
+## Cluster
+```{r}
+IFE003 <- FindNeighbors(IFE003, dims = 1:10)
+IFE003 <- FindClusters(IFE003, resolution = 0.5)
+head(Idents(IFE003), 5)
+```
+
+## Non-linear dimensional reduction (UMAP/tSNE)
+```{r}
+IFE003 <- RunUMAP(IFE003, dims = 1:10)
+DimPlot(IFE003, reduction = "umap")
+saveRDS(IFE003, file = "./IFE003_umap.rds")
+```
 
 
 
